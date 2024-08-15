@@ -118,12 +118,12 @@ And for little-endian: the least significant bit of element A[1][1] is indexed
 as A_bits[0] and the most significant bit of element A[2][3] is indexed as
 A_bits[107].
 
-Big-endian is better for using concatenation for construction.  But
-little-endian is better if matrices are going to be written to a memory
-which is accessible by an external CPU.
+Big-endian is better for using concatenation for construction within
+Verilog.  But little-endian is better if matrices are going to be written to
+a memory which is accessible by an external CPU.
 
 From software on a CPU, you probably want to index matrices in the normal C
-row-major order, like this:
+zero-base row-major order, like this:
 
 ~~~
      int A[ROWS*COLS];
@@ -144,7 +144,7 @@ If we use big-endian in SystemVerilog, then C would have to look like this:
 ~~~
    int A[ROWS*COLS];
    int z;
-   z = A[(ROWS - 1 - row)*ROWS + (COLS - 1 - col)];
+   z = A[((ROWS - 1) - row)*ROWS + ((COLS - 1) - col)];
 ~~~
 
 or
@@ -152,8 +152,8 @@ or
 ~~~
     int A[ROWS][COLS];
     int z;
-    z = A[ROWS - 1 - row][COLS - 1 - col];
+    z = A[(ROWS - 1) - row][(COLS - 1) - col];
 ~~~
 
 Notice that the matrices are stored in row-major order in either case, it's
-just that the rows are mirrored and the columns are mirrored.
+just that both the row and column indices are mirrored.
