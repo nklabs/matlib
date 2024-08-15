@@ -81,7 +81,7 @@ operator as follows:
        18'd1 }; // Row 1
 ~~~
 
-A you can see, big-endian more closely matches mathematical notation.
+As you can see, big-endian more closely matches mathematical notation.
 
 Packed arrays can be directly assigned to bit vectors without any kind of
 casting:
