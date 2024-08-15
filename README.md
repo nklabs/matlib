@@ -9,7 +9,7 @@ code of both languages.
 
 We represent a matrix made up of, for example, 18 bit numbers as a
 SystemVerilog packed array.  For example, a 2x3 matrix (a matrix with two
-rows and 3 columns) called A is defined like this:
+rows and three columns) called A is defined like this:
 
 ~~~verilog
 logic [2:1][3:1][17:0] A; // Matrix
