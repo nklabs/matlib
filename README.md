@@ -1,9 +1,9 @@
-# matlib
+# nkMatlib
 
-Matlib is a SystemVerilog library for pipelined fixed-point matrix, vector
+nkMatlib is a SystemVerilog library for pipelined fixed-point matrix, vector
 and scalar operations.  It was designed to help convert MATLAB code to
-SystemVerilog while preserving a direct correspondence between the source
-code of both languages. 
+SystemVerilog while preserving some kind of direct correspondence between
+the source code of both languages.
 
 ## Basic idea
 
@@ -11,13 +11,14 @@ We represent a matrix made up of, for example, 18 bit numbers as a
 SystemVerilog packed array.
 
 Unfortunately we immediately run into a big-endian / little-endian type
-of problem.
+of problem.  For nkMatlib, we chose little endian, but both possibilities
+are explained below.
 
 A 2x3 matrix (a matrix with two rows and three columns) called A could be
 defined two ways:
 
 ~~~verilog
-// Little endian
+// Little endian (nkMatlib)
 logic [2:1][3:1][17:0] A; // Matrix
 logic [2:1][3:1][17:0] B; // Matrix
 logic [3:1][17:0] C; // Vector
@@ -40,7 +41,8 @@ construct matrices in standard mathematical notation, see below.
 For big-endian, notice that if you use Verilator for linting or simulation,
 the warning for use of ascending ranges should be suppressed.
 
-Either way, an element of the matrix can be accessed like this:
+Either way (big-endian or little-endian), an element of the matrix can be
+accessed like this:
 
 ~~~verilog
  z = A[2][3]; // Read element from row 2, column 3.
@@ -119,11 +121,11 @@ as A_bits[0] and the most significant bit of element A[2][3] is indexed as
 A_bits[107].
 
 Big-endian is better for using concatenation for construction within
-Verilog.  But little-endian is better if matrices are going to be written to
-a memory which is accessible by an external CPU.
+Verilog.  But little-endian is better if matrices are going to be written
+unmodified to a memory which is accessible by an external CPU.
 
 From software on a CPU, you probably want to index matrices in the normal C
-zero-base row-major order, like this:
+zero-based row-major order, like this:
 
 ~~~
      int A[ROWS*COLS];
@@ -156,4 +158,4 @@ or
 ~~~
 
 Notice that the matrices are stored in row-major order in either case, it's
-just that both the row and column indices are mirrored.
+just that both the row index values and column index values are mirrored.
