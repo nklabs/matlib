@@ -5,7 +5,7 @@ and scalar operations.  It was designed to help convert MATLAB code to
 SystemVerilog while preserving some kind of direct correspondence between
 the source code of both languages.
 
-## Basic idea
+## Representation
 
 We represent a matrix made up of, for example, 18 bit numbers as a
 SystemVerilog packed array.
