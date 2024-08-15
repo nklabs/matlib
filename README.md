@@ -33,7 +33,7 @@ logic [17:0] z; // Scalar
 Notice that the matrix dimension ranges begin with 1 instead of 0.  This
 makes indexing compatible with standard mathematical notation.
 
-Notice that dimension indicies are ascending instead of the normal
+Notice that dimension indices are ascending instead of the normal
 descending for big-endian.  This allows us to use Verilog concatenation to
 construct matrices in standard mathematical notation, see below.
 
