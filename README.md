@@ -169,8 +169,6 @@ arithmetic.  Each number is specified by two parameters: it's WIDTH and its
 SCALE.  WIDTH indicates the the total number of bits including the sign. 
 SCALE is the number of fractional bits.
 
-Signed is generally assumed, but some modules support unsigned.
-
 The parameters are encapsulated in a SystemVerilog interface called
 __fixedp__ along with other common parameters and the clock (clk) and reset
 signals.
@@ -240,6 +238,82 @@ always @(posedge clk)
 endmodule
 ~~~
 
+#### Signed vs. Unsigned
+
+Signed numbers are generally assumed, but some modules support unsigned. 'u'
+is used to indicate unsigned and 's' is used to indicate signed in module
+names:
+
+	umul    Unsigned multiply
+	smul    Signed multiply
+
+Most operations will be indicated by module instantiation, but usualy not
+comparisons.  It's a good idea to be explicit when performing comparisons:
+
+~~~verilog
+  if ($signed(z) > $signed(n))
+    $display("z is more positive than n");
+~~~
+
 ## Pipelining
+
+All operator modules are pipelined.  This means that they have a throughput
+of one result (or input) per clock cycle, but the latency depends on the
+number of flip-flop stages that make up the operation.
+
+If the overall latency of an operation composed of many operator modules is
+100 cycles, then you may have 100 different threads in flight, but feedback
+from a thread back to itself requires 100 cycles.
+
+## Matching delays
+
+As a thread flows through a pipeline, it is often necessary to pass
+per-thread data in parallel with it.  It is usually not necessary to reset
+the flip-flops that make up this delay.  The advantage of not resetting
+these flip-flops is that synthesis will merge the flip flops into SRLs
+(shift register memories).
+
+On the other hand, it is often necessary to have at least a valid signal
+which is properly reset.  We call these valid delays.
+
+A typical operation stage looks like this:
+
+~~~verilog
+
+/// Perform: result = A*B+C
+
+// Input: stage 0
+
+logic [3:1][3:1][g.WIDTH-1:0] A_0;
+logic [3:1][3:1][g.WIDTH-1:0] B_0;
+logic [3:1][3:1][g.WIDTH-1:0] C_0;
+logic valid_0;
+
+// Stage 1, multiply
+
+logic [3:1][3:1][g.WIDTH-1:0] prod_1;
+logic [3:1][3:1][g.WIDTH-1:0] C_1;
+logic valid_1;
+
+matmul #(.A_ROWS(3), .A_COLS_B_ROWS(3), .B_COLS(3)) i_matmul_prod_1 (.g (g), .a (A_0), .b (B_0), .f (prod_1));
+
+matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1 (.g (g), .i (C_0), .o (C_1));
+
+matmul_valid i_valid_1 (.g (g), .i (valid_0), .o (valid_1));
+
+// Stage 2, add
+
+logic [3:1][3:1][g.WIDTH-1:0] result_2;
+logic valid_2;
+
+matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2 (.g (g), .a (prod_1), .b (C_1), .f (result_2));
+
+valid i_valid_2 (.g (g), .i (valid_0), .o (valid_1));
+
+~~~
+
+Note that this illustrates a good way to organize the signals between
+stages: postfix the names with the stage number, so we have C_0, C_1 and
+C_2.
 
 ## Modules
