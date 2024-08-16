@@ -335,3 +335,70 @@ stages: postfix the names with the stage number, so we have C_0, C_1 and
 C_2.
 
 ## Modules
+
+### Element by element operations
+
+Each of these operators performs an element-by-element operation (the same
+operation is performed on each corresponding element):
+
+#### Element by element absolute value
+elem_abs #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
+
+#### Element by element negate
+elem_neg #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
+
+#### Element by element right-shift
+elem_rshift
+
+#### Create a matrix where all elements have the same scalar
+elem_same
+
+#### Element by element signed division
+elem_sdiv
+
+#### Signed division of each element of each matrix row by each element of row vector
+elem_sdiv_by_row
+
+#### Element by element signed inverse
+elem_sinv
+
+
+#### Element by element signed maximum between two matrices
+elem_smax
+
+#### Element by element signed minimum between two matrices
+elem_smin
+
+#### Element by element signed multiplication between two matrices
+elem_smul
+
+#### Signed multiplation of each element of each matrix column by each element of column vector
+elem_smul_by_col
+
+#### Convert fixed point format
+elem_snorm
+
+#### Element by element signed square
+elem_ssqr
+
+#### Element by element square root
+elem_usqrt
+
+matadd
+matadd3
+matadd3b1
+matadd3b2
+matmul
+matscale
+matsub
+matunscale
+
+selcols
+selrows
+
+showmat
+showint
+
+vecmax
+vecmin
+
