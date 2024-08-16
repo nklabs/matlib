@@ -162,5 +162,84 @@ or
 Notice that the matrices are stored in row-major order in either case, it's
 just that both the row index values and column index values are mirrored.
 
-### Fixed-point math
+### Fixed-point arithmetic
 
+The library generally uses signed or unsigned 2's complement fixed-point
+arithmetic.  Each number is specified by two parameters: it's WIDTH and its
+SCALE.  WIDTH indicates the the total number of bits including the sign. 
+SCALE is the number of fractional bits.
+
+Signed is generally assumed, but some modules support unsigned.
+
+The parameters are encapsulated in a SystemVerilog interface called
+__fixedp.sv__ along with other common parameters and the clock (clk) and reset
+signals.
+
+__macros.svh__ is an include file which includes fixed point to floating
+point conversion macros.  This example module illustrates the use of these
+macros, and shows the typical boilerplate needed for any module using
+nkMatlib:
+
+~~~verilog
+	// All flies should include the macros
+	`include "macros.svh"
+
+	module mymodule
+	  (
+	  input clk,
+	  input reset,
+	  );
+
+	// Instantiate fixedp interface, specifying WIDTH and SCALE.
+	// Note that instance is called 'g', which is expected by some
+	// of the macros.
+
+	fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (clk), .reset (reset));
+
+	// Some numbers
+
+	logic [2:1][3:1][g.WIDTH-1:0] A; // Matrix
+	logic [3:1][g.WIDTH-1:0] C; // Vector
+	logic [g.WIDTH-1:0] z; // Scalar
+
+	always @(posedge clk)
+	  if (reset)
+	    begin
+	      A <= '0;
+	      C <= '0;
+	      z <= '0;
+	    end
+	  else
+	    begin
+
+	      // Convert Verilog floating point constant to fixed point,
+	      // these all produce the same result:
+
+              z <= `TOFIXED(-1.2, 16, 12); // Specify WIDTH and SCALE
+
+              z <= `TOFIXEDP(-1.2, g); // Get parameters from specific interface
+
+              z <= `TOFXD(-1.2); // Get parameter from default interface 'g'
+
+	      // Matrix
+              //                                First col
+	      A <= { `TOFXD(2.2), `TOFXD(2.1), `TOFXD(2.0),   // Second row
+                     `TOFXD(1.2), `TOFXD(1.1), `TOFXD(1.0) }; // First row
+
+	      // Convert fixed point to floating point for $display,
+              // these all produce the same result:
+
+	      $display("z = %f", `TOFLOAT(z, 16, 12)); // Specify WIDTH and SCALE
+
+	      $display("z = %f", `TOFLOATP(z, g)); // Get parameters from specific interface
+
+	      $display("z = %f", `TOFLT(z)); // Get parameter from default interface 'g'
+	    end
+
+
+	endmodule
+~~~
+
+## Pipelining
+
+## Modules
