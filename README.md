@@ -273,8 +273,11 @@ the flip-flops that make up this delay.  The advantage of not resetting
 these flip-flops is that synthesis will merge the flip flops into SRLs
 (shift register memories).
 
-On the other hand, it is often necessary to have at least a valid signal
-which is properly reset.  We call these valid delays.
+On the other hand, it is often necessary to have at least a valid signal (a
+signal which is high for each cycle with valid data) which is properly
+reset.
+
+We call these valid delays.
 
 A typical operation stage looks like this:
 
@@ -295,20 +298,35 @@ logic [3:1][3:1][g.WIDTH-1:0] prod_1;
 logic [3:1][3:1][g.WIDTH-1:0] C_1;
 logic valid_1;
 
-matmul #(.A_ROWS(3), .A_COLS_B_ROWS(3), .B_COLS(3)) i_matmul_prod_1 (.g (g), .a (A_0), .b (B_0), .f (prod_1));
+matmul #(.A_ROWS(3), .A_COLS_B_ROWS(3), .B_COLS(3)) i_matmul_prod_1
+  (
+    .g (g), .a (A_0), .b (B_0), .f (prod_1)
+  );
 
-matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1 (.g (g), .i (C_0), .o (C_1));
+matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1
+  (
+    .g (g), .i (C_0), .o (C_1)
+  );
 
-matmul_valid i_valid_1 (.g (g), .i (valid_0), .o (valid_1));
+matmul_valid i_valid_1
+  (
+    .g (g), .i (valid_0), .o (valid_1)
+  );
 
 // Stage 2, add
 
 logic [3:1][3:1][g.WIDTH-1:0] result_2;
 logic valid_2;
 
-matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2 (.g (g), .a (prod_1), .b (C_1), .f (result_2));
+matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2
+  (
+    .g (g), .a (prod_1), .b (C_1), .f (result_2)
+  );
 
-valid i_valid_2 (.g (g), .i (valid_0), .o (valid_1));
+valid i_valid_2
+  (
+    .g (g), .i (valid_0), .o (valid_1)
+  );
 
 ~~~
 
