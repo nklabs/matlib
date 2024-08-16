@@ -181,63 +181,63 @@ macros, and shows the typical boilerplate needed for any module using
 nkMatlib:
 
 ~~~verilog
-	// All flies should include the macros
-	`include "macros.svh"
+// All flies should include macros.svh
+`include "macros.svh"
 
-	module mymodule
-	  (
-	  input clk,
-	  input reset,
-	  );
+module mymodule
+  (
+  input clk,
+  input reset,
+  );
 
-	// Instantiate fixedp interface, specifying WIDTH and SCALE.
-	// Note that instance is called 'g', which is expected by some
-	// of the macros.
+// Instantiate fixedp interface, specifying WIDTH and SCALE.
+// Note that instance is called 'g', which is expected by some
+// of the macros.
 
-	fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (clk), .reset (reset));
+fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (clk), .reset (reset));
 
-	// Some numbers
+// Some numbers
 
-	logic [2:1][3:1][g.WIDTH-1:0] A; // Matrix
-	logic [3:1][g.WIDTH-1:0] C; // Vector
-	logic [g.WIDTH-1:0] z; // Scalar
+logic [2:1][3:1][g.WIDTH-1:0] A; // Matrix
+logic [3:1][g.WIDTH-1:0] C; // Vector
+logic [g.WIDTH-1:0] z; // Scalar
 
-	always @(posedge clk)
-	  if (reset)
-	    begin
-	      A <= '0;
-	      C <= '0;
-	      z <= '0;
-	    end
-	  else
-	    begin
+always @(posedge clk)
+  if (reset)
+    begin
+      A <= '0;
+      C <= '0;
+      z <= '0;
+    end
+  else
+    begin
 
-	      // Convert Verilog floating point constant to fixed point,
-	      // these all produce the same result:
+      // Convert Verilog floating point constant to fixed point,
+      // these all produce the same result:
 
-              z <= `TOFIXED(-1.2, 16, 12); // Specify WIDTH and SCALE
+      z <= `TOFIXED(-1.2, 16, 12); // Specify WIDTH and SCALE
 
-              z <= `TOFIXEDP(-1.2, g); // Get parameters from specific interface
+      z <= `TOFIXEDP(-1.2, g); // Get parameters from specific interface
 
-              z <= `TOFXD(-1.2); // Get parameter from default interface 'g'
+      z <= `TOFXD(-1.2); // Get parameter from default interface 'g'
 
-	      // Matrix
-              //                                First col
-	      A <= { `TOFXD(2.2), `TOFXD(2.1), `TOFXD(2.0),   // Second row
-                     `TOFXD(1.2), `TOFXD(1.1), `TOFXD(1.0) }; // First row
+      // Matrix
+      //                                First col
+      A <= { `TOFXD(2.2), `TOFXD(2.1), `TOFXD(2.0),   // Second row
+             `TOFXD(1.2), `TOFXD(1.1), `TOFXD(1.0) }; // First row
 
-	      // Convert fixed point to floating point for $display,
-              // these all produce the same result:
+      // Convert fixed point to floating point for $display,
+      // these all produce the same result:
 
-	      $display("z = %f", `TOFLOAT(z, 16, 12)); // Specify WIDTH and SCALE
+      $display("z = %f", `TOFLOAT(z, 16, 12)); // Specify WIDTH and SCALE
 
-	      $display("z = %f", `TOFLOATP(z, g)); // Get parameters from specific interface
+      $display("z = %f", `TOFLOATP(z, g)); // Get parameters from specific interface
 
-	      $display("z = %f", `TOFLT(z)); // Get parameter from default interface 'g'
-	    end
+      $display("z = %f", `TOFLT(z)); // Get parameter from default interface 'g'
+    end
 
 
-	endmodule
+endmodule
 ~~~
 
 ## Pipelining
