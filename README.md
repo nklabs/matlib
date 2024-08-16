@@ -339,40 +339,91 @@ C_2.
 ### Element by element operations
 
 Each of these operators performs an element-by-element operation (the same
-operation is performed on each corresponding element):
+operation is performed on each corresponding element).
+
+They all take two parameters: ROWS and COLS.  These specify the share of the
+matrix arguments.  The default for ROWS and COLS is 1.
+
+These operators may be used for matrices, vectors or scalars:
+
+  ROW=COL=1: argument is a scalar.
+
+  ROW=1 or COLS=1: argument is a vector.
 
 #### Element by element absolute value
+
+Similar to MATLAB abs(A)
+
 elem_abs #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
 
+elem_abs latency = 1.
+
 #### Element by element negate
+
+Similar to MATLAB -A.
+
 elem_neg #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
 
-#### Element by element right-shift
-elem_rshift
+elem_neg latency = 1.
+
+#### Element by element unsigned right-shift
+
+Right shift each element by a specified number of bits.
+
+elem_rshift #(.ROWS(1), .COLS(1)) i_elem_rshift (.g (g), .a (input), .b (shift), .f (output));
+
+ele_rshift latency = 1.
 
 #### Create a matrix where all elements have the same scalar
-elem_same
+
+Similar to MATLAB ones(rows, cols)
+
+elem_same #(.ROWS(1), .COLS(1)) i_elem_same (.g (g), .a (input), .f (output));
+
+elem_same latency = 0.
 
 #### Element by element signed division
-elem_sdiv
+
+Similar to MATLAB Matrix ./ Matrix
+
+elem_sdiv #(.ROWS(1), .COLS(1)) i_elem_sdiv (.g (g), .a (dividend), .b (divisor), .f (quotient));
+
+elem_sdiv latency = WIDTH + SCALE.
 
 #### Signed division of each element of each matrix row by each element of row vector
-elem_sdiv_by_row
+
+Similar to MATLAB Matrix ./ RowVector
+
+elem_sdiv_by_row #(.ROWS(1), .COLS(1)) i_elem_sdiv_by_row (.g (g), .a (dividend), .b (divisor_row), .f (quotient));
+
+elem_sdiv latency = WIDTH + SCALE.
 
 #### Element by element signed inverse
-elem_sinv
 
+Similar to MATLAB A.^-1
+
+elem_sinv #(.ROWS(1), .COLS(1)) i_elem_sinv (.g (g), .a (input), .f (output));
+
+elem_sinv latency = WIDTH + SCALE.
 
 #### Element by element signed maximum between two matrices
+
 elem_smax
 
 #### Element by element signed minimum between two matrices
+
 elem_smin
 
 #### Element by element signed multiplication between two matrices
-elem_smul
+
+Similar to MATLAB A.*B
+
+elem_smul #(.ROWS(1), .COLS(1)) i_elem_smul (.g (g), .a (a_input), .b (b_input), .f (result));
+
+elem_smul latency = 4.
 
 #### Signed multiplation of each element of each matrix column by each element of column vector
+
 elem_smul_by_col
 
 #### Convert fixed point format
