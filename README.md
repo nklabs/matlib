@@ -7,7 +7,9 @@ the source code of both languages.
 
 ## Representation
 
-We represent a matrix made up of, for example, 18 bit numbers as a
+### Packed Arrays
+
+We represent a matrix made up of, for example, 16 bit numbers as a
 SystemVerilog packed array.
 
 Unfortunately we immediately run into a big-endian / little-endian type
@@ -64,9 +66,9 @@ operator as follows:
 
 // Assign vector C
 
- C = { 18'd1,   // Row 1
-       18'd2,   // Row 2
-       18'd3 }; // Row 3
+ C = { 16'd1,   // Row 1
+       16'd2,   // Row 2
+       16'd3 }; // Row 3
 
 //// Little-endian:
 
@@ -78,9 +80,9 @@ operator as follows:
 
 // Assign vector C
 
- C = { 18'd3,   // Row 3
-       18'd2,   // Row 2
-       18'd1 }; // Row 1
+ C = { 16'd3,   // Row 3
+       16'd2,   // Row 2
+       16'd1 }; // Row 1
 ~~~
 
 As you can see, big-endian more closely matches mathematical notation.
@@ -89,7 +91,7 @@ Packed arrays can be directly assigned to bit vectors without any kind of
 casting:
 
 ~~~verilog
-logic [107:0] A_bits;
+logic [95:0] A_bits;
 logic [$bits(A)-1:0] A_bits; // Note that you can use $bits() instead of a constant to copy the size
 
 A_bits = A;
@@ -103,59 +105,62 @@ The elements of a matrix are ordered like this in such a bit-vector:
 ~~~
 // Big-endian:
 
-  |107 ... 90|89 ... 72|71 ... 54|53 ... 36|35 ... 18|17 ...  0|
-     A[1][1]   A[1][2]   A[1][3]   A[2][1]   A[2][2]   A[2][3]
+  |95 ... 80|79 ... 64|63 ... 48|47 ... 32|31 ... 16|15 ...  0|
+    A[1][1]   A[1][2]   A[1][3]   A[2][1]   A[2][2]   A[2][3]
 
 // Little-endian:
 
-  |107 ... 90|89 ... 72|71 ... 54|53 ... 36|35 ... 18|17 ...  0|
-     A[2][3]   A[2][2]   A[2][1]   A[1][3]   A[1][2]   A[1][1]
+  |95 ... 80|79 ... 64|63 ... 48|47 ... 32|31 ... 16|15 ...  0|
+    A[2][3]   A[2][2]   A[2][1]   A[1][3]   A[1][2]   A[1][1]
 ~~~
 
 So for big-endian: the least significant bit of element A[2][3] is indexed
 as A_bits[0] and the most significant bit of element A[1][1] is indexed as
-A_bits[107].
+A_bits[95].
 
 And for little-endian: the least significant bit of element A[1][1] is indexed
 as A_bits[0] and the most significant bit of element A[2][3] is indexed as
-A_bits[107].
+A_bits[95].
 
 Big-endian is better for using concatenation for construction within
 Verilog.  But little-endian is better if matrices are going to be written
-unmodified to a memory which is accessible by an external CPU.
+unmodified to a memory which is accessible by an external little-endian CPU.
 
 From software on a CPU, you probably want to index matrices in the normal C
 zero-based row-major order, like this:
 
 ~~~
-     int A[ROWS*COLS];
-     int z;
+     int16_t A[ROWS*COLS];
+     int16_t z;
      z = A[row * ROWS + col]
 ~~~
 
 or
 
 ~~~
-    int A[ROWS][COLS];
-    int z;
+    int16_t A[ROWS][COLS];
+    int16_t z;
     z = A[row][col];
 ~~~
 
 If we use big-endian in SystemVerilog, then C would have to look like this:
 
 ~~~
-   int A[ROWS*COLS];
-   int z;
+   int16_t A[ROWS*COLS];
+   int16_t z;
    z = A[((ROWS - 1) - row)*ROWS + ((COLS - 1) - col)];
 ~~~
 
 or
 
 ~~~
-    int A[ROWS][COLS];
-    int z;
+    int16_t A[ROWS][COLS];
+    int16_t z;
     z = A[(ROWS - 1) - row][(COLS - 1) - col];
 ~~~
 
 Notice that the matrices are stored in row-major order in either case, it's
 just that both the row index values and column index values are mirrored.
+
+### Fixed-point math
+
