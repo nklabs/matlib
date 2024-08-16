@@ -172,7 +172,7 @@ SCALE is the number of fractional bits.
 Signed is generally assumed, but some modules support unsigned.
 
 The parameters are encapsulated in a SystemVerilog interface called
-__fixedp.sv__ along with other common parameters and the clock (clk) and reset
+__fixedp__ along with other common parameters and the clock (clk) and reset
 signals.
 
 __macros.svh__ is an include file which includes fixed point to floating
