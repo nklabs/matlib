@@ -1,9 +1,131 @@
 # nkMatlib
 
-nkMatlib is a SystemVerilog library for pipelined fixed-point matrix, vector
-and scalar operations.  It was designed to help convert MATLAB code to
-SystemVerilog while preserving some kind of direct correspondence between
-the source code of both languages.
+nkMatlib is a SystemVerilog library for pipelined real-valued fixed-point
+matrix, vector and scalar operations.  It was designed to help convert
+MATLAB expressions to SystemVerilog while preserving some kind of direct
+correspondence between the source code of both languages.
+
+nkMatlib is pipelined so that its throughput is one result per clock cycle. 
+You may feed one independent problem into the pipeline each cycle.  The
+latency of the calculation (the number of clocks needed to compute the
+problem) depends on the number and type of operations that make it up.
+
+## Example
+
+Here is a simple example module that computes: A*B+C.  Multply a 3x2 matrix
+A by a 2x3 matrix B and then add a 3x3 matrix C to the product.
+
+~~~verilog
+
+`include "macros.svh"
+
+module example
+  (
+  fixedp g,
+
+  input valid_0,
+  input [3:1][2:1][g.WIDTH-1:0] A_0,
+  input [2:1][3:1][g.WIDTH-1:0] B_0,
+  input [3:1][3:1][g.WIDTH-1:0] C_0,
+
+  output valid_N,
+  output [3:1][3:1][g.WIDTH-1:0] result_N
+  );
+
+/// Perform: result = A*B+C
+
+// Stage 1, prod = A*B
+
+logic [3:1][3:1][g.WIDTH-1:0] prod_1;
+logic [3:1][3:1][g.WIDTH-1:0] C_1;
+logic valid_1;
+
+matmul #(.A_ROWS(3), .A_COLS_B_ROWS(2), .B_COLS(3)) i_matmul_prod_1
+  (
+    .g (g), .a (A_0), .b (B_0), .f (prod_1)
+  );
+
+matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1
+  (
+    .g (g), .i (C_0), .o (C_1)
+  );
+
+matmul_valid i_valid_1
+  (
+    .g (g), .i (valid_0), .o (valid_1)
+  );
+
+// Stage 2, result = prod+C
+
+logic [3:1][3:1][g.WIDTH-1:0] result_2;
+logic valid_2;
+
+matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2
+  (
+    .g (g), .a (prod_1), .b (C_1), .f (result_2)
+  );
+
+valid i_valid_2
+  (
+    .g (g), .i (valid_0), .o (valid_1)
+  );
+
+// Result
+
+assign valid_N = valid_2;
+assign result_N = result_2;
+
+endmodule
+
+~~~
+
+By convention: All instance names are prefixed with i_ and postfixed with
+_nn, where nn is the "stage number".  The stage number is assigned to each
+operation from inside out of the source expression.  This distinguishes
+signals from instances, otherwise of the same name and allows you to pass
+signals with the same name through the stages.
+
+By convention, inputs are call postfixed with _0 and outputs are postfixed
+with _N.
+
+All modules that use nkMatlib should include macros.svh.  Macros.svh
+include debugging and floating to fixed point conversion macros.
+
+All modules that use nkMatlib should have a fixedp interface port. 
+A convention is to call this port 'g'.
+
+Fixedp includes the clock and reset signals to be used by all logic within
+the module.  It also include parameters giving the size and precision of the
+fixed-point numbers.  Fixedp should be instantiated like this:
+
+~~~verilog
+fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (my_clk), .reset (my_reset));
+~~~
+
+WIDTH indicates that each fixed-point number will use 16-bits.  SCALE
+indicates that each fixed-point number has 12 fractional bits (12 bits to
+the right of the binary point).
+
+my_clk will be used as the clock.  my_reset will be used as the reset
+signal.  nkMatlib uses synchronous reset.
+
+There are two stages in this module, 1 and 2.
+
+Stage 1 has the matrix multiply operator: __matmul__.  Stage 2 has the add
+operator: __matadd__.  Stage 2 needs the input C, which must be delayed by a
+number of clock cycles equaling the latency of __matmul__ so that C and the
+__matmul__ result are ready in the same cycle.  __matmul_pipe__ provides
+this matching delay.
+
+A valid signal that indicates which cycles have valid data is passed through
+the pipeline.  The __matmul_valid__ and __valid__ modules provide the
+matching delays for this purpose.
+
+Most flip flops in nkMatlib are not reset.  This allows the synthesis tool
+to replace strings of flip-flops with shift registers (Xilinx SRLs).
+
+But flip flops for the valid signal are reset so that the valid signal is
+correct right after reset.
 
 ## Representation
 
@@ -281,54 +403,6 @@ We call these valid delays.
 
 A typical operation stage looks like this:
 
-~~~verilog
-
-/// Perform: result = A*B+C
-
-// Input: stage 0
-
-logic [3:1][3:1][g.WIDTH-1:0] A_0;
-logic [3:1][3:1][g.WIDTH-1:0] B_0;
-logic [3:1][3:1][g.WIDTH-1:0] C_0;
-logic valid_0;
-
-// Stage 1, multiply
-
-logic [3:1][3:1][g.WIDTH-1:0] prod_1;
-logic [3:1][3:1][g.WIDTH-1:0] C_1;
-logic valid_1;
-
-matmul #(.A_ROWS(3), .A_COLS_B_ROWS(3), .B_COLS(3)) i_matmul_prod_1
-  (
-    .g (g), .a (A_0), .b (B_0), .f (prod_1)
-  );
-
-matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1
-  (
-    .g (g), .i (C_0), .o (C_1)
-  );
-
-matmul_valid i_valid_1
-  (
-    .g (g), .i (valid_0), .o (valid_1)
-  );
-
-// Stage 2, add
-
-logic [3:1][3:1][g.WIDTH-1:0] result_2;
-logic valid_2;
-
-matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2
-  (
-    .g (g), .a (prod_1), .b (C_1), .f (result_2)
-  );
-
-valid i_valid_2
-  (
-    .g (g), .i (valid_0), .o (valid_1)
-  );
-
-~~~
 
 Note that this illustrates a good way to organize the signals between
 stages: postfix the names with the stage number, so we have C_0, C_1 and
@@ -341,7 +415,7 @@ C_2.
 Each of these operators performs an element-by-element operation (the same
 operation is performed on each corresponding element).
 
-They all take two parameters: ROWS and COLS.  These specify the share of the
+They all take two parameters: ROWS and COLS.  These specify the shape of the
 matrix arguments.  The default for ROWS and COLS is 1.
 
 These operators may be used for matrices, vectors or scalars:
@@ -376,7 +450,7 @@ ele_rshift latency = 1.
 
 #### Create a matrix where all elements have the same scalar
 
-Similar to MATLAB ones(rows, cols)
+Similar to MATLAB ones(rows, cols), zeros(rows, cols)
 
 elem_same #(.ROWS(1), .COLS(1)) i_elem_same (.g (g), .a (input), .f (output));
 
@@ -388,7 +462,7 @@ Similar to MATLAB Matrix ./ Matrix
 
 elem_sdiv #(.ROWS(1), .COLS(1)) i_elem_sdiv (.g (g), .a (dividend), .b (divisor), .f (quotient));
 
-elem_sdiv latency = WIDTH + SCALE.
+elem_sdiv latency = g.WIDTH + g.SCALE.
 
 #### Signed division of each element of each matrix row by each element of row vector
 
@@ -396,7 +470,7 @@ Similar to MATLAB Matrix ./ RowVector
 
 elem_sdiv_by_row #(.ROWS(1), .COLS(1)) i_elem_sdiv_by_row (.g (g), .a (dividend), .b (divisor_row), .f (quotient));
 
-elem_sdiv latency = WIDTH + SCALE.
+elem_sdiv latency = g.WIDTH + g.SCALE.
 
 #### Element by element signed inverse
 
@@ -404,7 +478,7 @@ Similar to MATLAB A.^-1
 
 elem_sinv #(.ROWS(1), .COLS(1)) i_elem_sinv (.g (g), .a (input), .f (output));
 
-elem_sinv latency = WIDTH + SCALE.
+elem_sinv latency = g.WIDTH + g.SCALE.
 
 #### Element by element signed maximum between two matrices
 
