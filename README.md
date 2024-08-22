@@ -85,13 +85,13 @@ operation from inside out of the source expression.  This distinguishes
 signals from instances, otherwise of the same name and allows you to pass
 signals with the same name through the stages.
 
-By convention, inputs are call postfixed with _0 and outputs are postfixed
-with _N.
+By convention, inputs are postfixed with _0 and outputs are postfixed with
+_N.
 
 All modules that use nkMatlib should include macros.svh.  Macros.svh
-include debugging and floating to fixed point conversion macros.
+includes debugging and floating to fixed point conversion macros.
 
-All modules that use nkMatlib should have a fixedp interface port. 
+All modules that use nkMatlib should have a __fixedp__ interface port. 
 A convention is to call this port 'g'.
 
 Fixedp includes the clock and reset signals to be used by all logic within
@@ -102,12 +102,10 @@ fixed-point numbers.  Fixedp should be instantiated like this:
 fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (my_clk), .reset (my_reset));
 ~~~
 
-WIDTH indicates that each fixed-point number will use 16-bits.  SCALE
-indicates that each fixed-point number has 12 fractional bits (12 bits to
-the right of the binary point).
-
-my_clk will be used as the clock.  my_reset will be used as the reset
-signal.  nkMatlib uses synchronous reset.
+In this case, WIDTH indicates that each fixed-point number will use 16-bits. 
+SCALE indicates that each fixed-point number has 12 fractional bits (12 bits
+to the right of the binary point).  my_clk will be used as the clock. 
+my_reset will be used as the reset signal.  nkMatlib uses synchronous reset.
 
 There are two stages in this module, 1 and 2.
 
@@ -122,9 +120,8 @@ the pipeline.  The __matmul_valid__ and __valid__ modules provide the
 matching delays for this purpose.
 
 Most flip flops in nkMatlib are not reset.  This allows the synthesis tool
-to replace strings of flip-flops with shift registers (Xilinx SRLs).
-
-But flip flops for the valid signal are reset so that the valid signal is
+to replace strings of flip-flops with shift registers (Xilinx SRLs).  But
+flip flops for the valid signal are reset so that the valid signal is
 correct right after reset.
 
 ## Representation
