@@ -80,23 +80,23 @@ endmodule
 ~~~
 
 By convention: All instance names are prefixed with i_ and postfixed with
-_nn, where nn is the "stage number".  The stage number is assigned to each
+_nn, where nn is the stage number.  The stage number is assigned to each
 operation from inside out of the source expression.  This distinguishes
-signals from instances, otherwise of the same name and allows you to pass
+signals from instances, otherwise of the same name, and allows you to pass
 signals with the same name through the stages.
 
 By convention, inputs are postfixed with _0 and outputs are postfixed with
 _N.
 
 All modules that use nkMatlib should include macros.svh.  Macros.svh
-includes debugging and floating to fixed point conversion macros.
+includes debugging and floating to fixed-point conversion macros.
 
 All modules that use nkMatlib should have a __fixedp__ interface port. 
 A convention is to call this port 'g'.
 
-Fixedp includes the clock and reset signals to be used by all logic within
-the module.  It also include parameters giving the size and precision of the
-fixed-point numbers.  Fixedp should be instantiated like this:
+__Fixedp__ includes the clock and reset signals to be used by all logic within
+the module.  It also includes parameters giving the size and precision of the
+fixed-point numbers.  __Fixedp__ should be instantiated like this:
 
 ~~~verilog
 fixedp #(.WIDTH(16), .SCALE(12)) g(.clk (my_clk), .reset (my_reset));
@@ -140,20 +140,20 @@ defined two ways:
 
 ~~~verilog
 // Little endian (nkMatlib)
-logic [2:1][3:1][17:0] A; // Matrix
-logic [2:1][3:1][17:0] B; // Matrix
-logic [3:1][17:0] C; // Vector
+logic [2:1][3:1][15:0] A; // Matrix
+logic [2:1][3:1][15:0] B; // Matrix
+logic [3:1][15:0] C; // Vector
 
 // Big endian
 /* verilator lint_off ASCRANGE */
-logic [1:2][1:3][17:0] A; // Matrix
-logic [1:2][1:3][17:0] B; // Matrix
-logic [1:3][17:0] C; // Vector
-logic [17:0] z; // Scalar
+logic [1:2][1:3][15:0] A; // Matrix
+logic [1:2][1:3][15:0] B; // Matrix
+logic [1:3][15:0] C; // Vector
+logic [15:0] z; // Scalar
 ~~~
 
 Notice that the matrix dimension ranges begin with 1 instead of 0.  This
-makes indexing compatible with standard mathematical notation.
+makes indexing compatible with standard mathematical notation and MATLAB.
 
 Notice that dimension indices are ascending instead of the normal
 descending for big-endian.  This allows us to use Verilog concatenation to
@@ -217,7 +217,7 @@ A_bits = A;
 ~~~
 
 This is very convenient since it allows you to pass matrices through generic
-library modules such as FIFOs.
+library modules which typically accept bit vectors such as FIFOs.
 
 The elements of a matrix are ordered like this in such a bit-vector:
 
@@ -298,7 +298,6 @@ macros, and shows the typical boilerplate needed for any module using
 nkMatlib:
 
 ~~~verilog
-// All flies should include macros.svh
 `include "macros.svh"
 
 module mymodule
@@ -359,19 +358,33 @@ endmodule
 
 #### Signed vs. Unsigned
 
-Signed numbers are generally assumed, but some modules support unsigned. 'u'
-is used to indicate unsigned and 's' is used to indicate signed in module
-names:
+Signed numbers are generally assumed, but some modules support unsigned.  A
+'u' prefix on the operator name is used to indicate unsigned and 's' is used
+to indicate signed:
 
 	umul    Unsigned multiply
 	smul    Signed multiply
 
-Most operations will be indicated by module instantiation, but usualy not
+Whether arguments are signed or not will generally be indicated by the
+module instantiation, but this is not the case for directly synthesized
 comparisons.  It's a good idea to be explicit when performing comparisons:
 
 ~~~verilog
-  if ($signed(z) > $signed(n))
-    $display("z is more positive than n");
+reg q_3; // True if z_2 > n_2
+
+always @(posedge g.clk)
+  begin
+    if ($signed(z_2) > $signed(n_2))
+      begin
+        if (valid_2)
+          $display("z is more positive than n");
+        q_3 <= 1;
+      end
+    else
+      begin
+        q_3 <= 0;
+      end
+  end
 ~~~
 
 ## Pipelining
@@ -398,14 +411,7 @@ reset.
 
 We call these valid delays.
 
-A typical operation stage looks like this:
-
-
-Note that this illustrates a good way to organize the signals between
-stages: postfix the names with the stage number, so we have C_0, C_1 and
-C_2.
-
-## Modules
+## Available Modules
 
 ### Element by element operations
 
@@ -498,29 +504,104 @@ elem_smul latency = 4.
 elem_smul_by_col
 
 #### Convert fixed point format
+
 elem_snorm
 
 #### Element by element signed square
+
+Similar to MATLAB A.^2
+
 elem_ssqr
 
 #### Element by element square root
+
+Similar to MATLAB sqrt(A)
+
 elem_usqrt
 
+### Standard Matrix Operators
+
+## Matrix addition
+
 matadd
-matadd3
-matadd3b1
-matadd3b2
-matmul
-matscale
+
+## Matrix subtraction
+
 matsub
+
+## Matrix addition of three arguments
+
+matadd3
+
+## Matrix addition of three arguments, one negated
+
+matadd3b1
+
+## Matrix addition of three arguments, two negated
+
+matadd3b2
+
+## Matrix multiplication
+
+matmul
+
+## Multiply a matrix by a scalar
+
+matscale
+
+## Matrix division by a scalar
+
 matunscale
 
+## Select columns of a matrix
+
+This is similar to the MATLAB syntax A(:,2:3)
+
 selcols
+
+## Select rows of a matrix
+
+This is similar to the MATLAB syntax A(2:3,:)
+
 selrows
 
 showmat
 showint
 
+## Transpose a matrix
+
+Similar to the MATLAB syntax A.'
+
+transp
+
 vecmax
 vecmin
+
+## Vector norm columns
+
+Similar to MATLAB vecnorm(A,2,1)
+
+vecnormcols
+
+## Sumsqr
+
+Sum of square of each element of A, resulting in a scalar.
+
+Similar to MATLAB sumsqr(A).
+
+sumsqr
+
+## Norm
+
+Compute sqrt(sum of square of each element of A), resulting in a scalar.
+
+Similar to MATLAB norm(A).
+
+norm
+
+## Vector cross-product
+
+Similar to MATLAB cross(A,B)
+
+crossp
 
