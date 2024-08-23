@@ -883,7 +883,7 @@ vecmin latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 Similar to MATLAB vecnorm(A,2,1)
 
-Find square root of the sum of squares of the elements of each column.
+Find the square root of the sum of the squares of the elements of each column.
 
 ~~~verilog
 vecnormcols #(.ROWS(1), .COLS(1)) i_vecnormcols
@@ -898,7 +898,7 @@ Result is a row vector with same number of columns as a.
 
 Similar to MATLAB vecnorm(A,2,2)
 
-Find square root of the sum of squares of the elements of each row.
+Find the square root of the sum of the squares of the elements of each row.
 
 ~~~verilog
 vecnormrows #(.ROWS(1), .COLS(1)) i_vecnormrows
