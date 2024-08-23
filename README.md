@@ -413,6 +413,20 @@ We call these valid delays.
 
 ## Available Modules
 
+### Utility functions
+
+#### showmat
+
+Display a matrix
+
+showmat
+
+#### showint
+
+Display an integer
+
+showint
+
 ### Element by element operations
 
 Each of these operators performs an element-by-element operation (the same
@@ -458,6 +472,10 @@ Similar to MATLAB ones(rows, cols), zeros(rows, cols)
 elem_same #(.ROWS(1), .COLS(1)) i_elem_same (.g (g), .a (input), .f (output));
 
 elem_same latency = 0.
+
+Note that the parameters g.ZERO, g.ONE, g.TWO, g.THREE, g.ONE_HALF,
+g.ONE_THIRD and g.TWO_THIRDS exist in __fixedp__ and may be used as inputs
+to __elem_same__.
 
 #### Element by element signed division
 
@@ -565,16 +583,18 @@ This is similar to the MATLAB syntax A(2:3,:)
 
 selrows
 
-showmat
-showint
-
 ## Transpose a matrix
 
 Similar to the MATLAB syntax A.'
 
 transp
 
+## Select maximum element of a vector
+
 vecmax
+
+## Select minimum element of a vector
+
 vecmin
 
 ## Vector norm columns
@@ -582,6 +602,12 @@ vecmin
 Similar to MATLAB vecnorm(A,2,1)
 
 vecnormcols
+
+## Vector norm rows
+
+Similar to MATLAB vecnorm(A,2,2)
+
+vecnormrows
 
 ## Sumsqr
 
@@ -591,13 +617,13 @@ Similar to MATLAB sumsqr(A).
 
 sumsqr
 
-## Norm
+## Rootsqr
 
 Compute sqrt(sum of square of each element of A), resulting in a scalar.
 
 Similar to MATLAB norm(A).
 
-norm
+rootsqr
 
 ## Vector cross-product
 
