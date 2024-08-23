@@ -667,7 +667,7 @@ elem_smul #(.ROWS(1), .COLS(1)) i_elem_smul
   );
 ~~~
 
-elem_smul latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
+elem_smul latency = g.MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 #### Signed multiplication of each element of each matrix column by each element of a column vector
 
@@ -680,7 +680,7 @@ elem_smul_by_col #(.ROWS(1), .COLS(1)) i_elem_smul_by_col
 
 Result has same matrix shape as a.
 
-elem_smul_by_col latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
+elem_smul_by_col latency = g.MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 #### Element by element signed square
 
@@ -695,7 +695,7 @@ elem_ssqr #(.ROWS(1), COLS(1)) i_elem_ssqr
   );
 ~~~
 
-elem_ssqr latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
+elem_ssqr latency = g.MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 #### Element by element square root
 
@@ -790,7 +790,7 @@ matmul #(.ROWS(1), .COLS(1)) i_matmul
   );
 ~~~
 
-matmul latency = MATMUL_LAT = MUL_LAT + 1 = 5.  Use __matmul_pipe__ and __matmul_valid__ for matching delays.
+matmul latency = g.MATMUL_LAT = g.MUL_LAT + 1 = 5.  Use __matmul_pipe__ and __matmul_valid__ for matching delays.
 
 ## Multiply a matrix by a scalar
 
@@ -803,7 +803,7 @@ matscale #(.ROWS(1), .COLS(1)) i_matscale
   );
 ~~~
 
-matscale latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
+matscale latency = g.MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 ## Matrix division by a scalar
 
@@ -922,7 +922,7 @@ sumsqr #(.COLS(1)) i_sumsqr
   );
 ~~~
 
-sumsqr latency = SUMSQR_LAT = MUL_LAT + 1 = 5.  Use __sumsqr_pipe__ and __sumsqr_valid__
+sumsqr latency = g.SUMSQR_LAT = g.MUL_LAT + 1 = 5.  Use __sumsqr_pipe__ and __sumsqr_valid__
 for matching delays.
 
 ## Rootsqr
@@ -938,7 +938,7 @@ rootsqr #(.COLS(1)) i_rootsqr
   );
 ~~~
 
-rootsqr latency = SQRT_LAT + SUMSQR_LAT.  Use __rootsqr_pipe__ and
+rootsqr latency = g.ROOTSQR_LAT = g.SQRT_LAT + g.SUMSQR_LAT.  Use __rootsqr_pipe__ and
 __rootsqr_valid__ for matching delays.
 
 ## Vector cross-product
