@@ -511,7 +511,7 @@ conversion.
 
 #### Convert between signed fixed point formats
 
-elem_snorm provdes the correct shifting, sign or zero extension and
+elem_snorm provides the correct shifting, sign or zero extension and
 truncation necessary to convert elements of a matrix from one fixed point
 format into another.  Note that elem_snorm uses simple truncation: it rounds
 numbers towards 0 when losing precision.
@@ -597,7 +597,7 @@ elem_sdiv #(.ROWS(1), .COLS(1)) i_elem_sdiv
 
 elem_sdiv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
-#### Signed division of each element of each matrix row by each element of row vector
+#### Signed division of each element of each matrix row by each element of a row vector
 
 Similar to MATLAB Matrix ./ RowVector
 
@@ -607,6 +607,8 @@ elem_sdiv_by_row #(.ROWS(1), .COLS(1)) i_elem_sdiv_by_row
   .g (g), .a (dividend), .b (divisor_row), .f (quotient)
   );
 ~~~
+
+The quotient has the same matrix shape as the dividend.
 
 elem_sdiv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
@@ -643,31 +645,70 @@ elem_smax latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Element by element signed minimum between two matrices
 
-elem_smin
+~~~verilog
+elem_smin #(.ROWS(1), .COLS(1)) i_elem_smin
+  (
+  .g (g), .a (input_a), .b (input_b), .f (output)
+  );
+~~~
+
+elem_smin latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Element by element signed multiplication between two matrices
 
 Similar to MATLAB A.*B
 
-elem_smul #(.ROWS(1), .COLS(1)) i_elem_smul (.g (g), .a (a_input), .b (b_input), .f (result));
+~~~verilog
+elem_smul #(.ROWS(1), .COLS(1)) i_elem_smul
+  (
+  .g (g), .a (a_input), .b (b_input), .f (result)
+  );
+~~~
 
-elem_smul latency = 4.
+elem_smul latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
-#### Signed multiplation of each element of each matrix column by each element of column vector
+#### Signed multiplication of each element of each matrix column by each element of a column vector
 
-elem_smul_by_col
+~~~verilog
+elem_smul_by_col #(.ROWS(1), .COLS(1)) i_elem_smul_by_col
+  (
+  .g (g), .a (a), .b (b_col), .f (result)
+  );
+~~~
+
+Result has same matrix shape as a.
+
+elem_smul_by_col latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 #### Element by element signed square
 
 Similar to MATLAB A.^2
 
-elem_ssqr
+Square each element of a matrix.
+
+~~~verilog
+elem_ssqr #(.ROWS(1), COLS(1)) i_elem_ssqr
+  (
+  .g (g), .a (a), .f (result)
+  );
+~~~
+
+elem_ssqr latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 #### Element by element square root
 
 Similar to MATLAB sqrt(A)
 
-elem_usqrt
+Find square root of each element of a matrix.
+
+~~~verilog
+elem_usqrt #(.ROWS(1), .COLS(1)) i_elem_usqrt
+  (
+  .g (g), .a (a), .f (result)
+  );
+~~~
+
+elem_usqrt latency = g.SQRT_LAT = g.WIDTH - (g.LEFT / 2).  Use __sqrt_pipe__ and __sqrt_valid__ for matching delays.
 
 ### Standard Matrix Operators
 
