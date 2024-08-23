@@ -289,7 +289,9 @@ binary point).
 
 The parameters are encapsulated in a SystemVerilog interface called
 __fixedp__ along with other common parameters and the clock (clk) and reset
-signals.
+signals.  __fixedp__ provides many other parameters dependent on WIDTH and
+SCALE.  One of these is LEFT: the number of bits to the left of the binary
+point, which is defined as (WIDTH - SCALE).
 
 __macros.svh__ is an include file which includes fixed point to floating
 point conversion macros.  This example module illustrates the use of these
@@ -714,93 +716,241 @@ elem_usqrt latency = g.SQRT_LAT = g.WIDTH - (g.LEFT / 2).  Use __sqrt_pipe__ and
 
 ## Matrix addition
 
-matadd
+Similar to MATLAB A + B.  Add two matrices.
+
+~~~verilog
+matadd #(.ROWS(1), .COLS(1)) i_matadd
+  (
+  .g (g), .a (a), .b (b), .f (result)
+  );
+~~~
+
+elem_matadd latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Matrix subtraction
 
-matsub
+Similar to MATLAB A - B.  Subtract matrix B from matrix A.
+
+~~~
+matsub #(.ROWS(1), .COLS(1)) i_matsub
+  (
+  .g (g), .a (a), .b (b), .f (result)
+  );
+~~~
+
+elem_matsub latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Matrix addition of three arguments
 
-matadd3
+Similar to MATLAB A + B + C.
+
+~~~verilog
+matadd3 #(.ROWS(1), .COLS(1)) i_matadd3
+  (
+  .g (g), .a (a), .b (b), .c (c), .f (result)
+  );
+~~~
+
+elem_matadd3 latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Matrix addition of three arguments, one negated
 
-matadd3b1
+Similar to MATLAB A + B - C.
+
+~~~verilog
+matadd3b1 #(.ROWS(1), .COLS(1)) i_matadd3b1
+  (
+  .g (g), .a (a), .b (b), .c (c), .f (result)
+  );
+~~~
+
+elem_matadd3b1 latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Matrix addition of three arguments, two negated
 
-matadd3b2
+Similar to MATLAB A - B - C.
+
+~~~verilog
+matadd3b2 #(.ROWS(1), .COLS(1)) i_matadd3b2
+  (
+  .g (g), .a (a), .b (b), .c (c), .f (result)
+  );
+~~~
+
+elem_matadd3b2 latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Matrix multiplication
 
-matmul
+Similar to MATLAB A*B.
+
+~~~verilog
+matmul #(.ROWS(1), .COLS(1)) i_matmul
+  (
+  .g (g), .a (a), .b (b), .g (result)
+  );
+~~~
+
+matmul latency = MATMUL_LAT = MUL_LAT + 1 = 5.  Use __matmul_pipe__ and __matmul_valid__ for matching delays.
 
 ## Multiply a matrix by a scalar
 
-matscale
+Similar to MATLAB a*B, where a is a scalar.
+
+~~~verilog
+matscale #(.ROWS(1), .COLS(1)) i_matscale
+  (
+  .g (g), .a (a), .b (b_scalar), .g (result)
+  );
+~~~
+
+matscale latency = MUL_LAT = 4.  Use __mul_pipe__ and __mul_valid__ for matching delays.
 
 ## Matrix division by a scalar
 
-matunscale
+Similar to MATLAB A/b, where b is a scalar.
+
+~~~verilog
+matunscale #(.ROWS(1), .COLS(1)) i_matunscale
+  (
+  .g (g), .a (a), .b (b_scalar), .g (result)
+  );
+~~~
+
+elem_sdiv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
 ## Select columns of a matrix
 
 This is similar to the MATLAB syntax A(:,2:3)
 
-selcols
+~~~verilog
+selcols #(.ROWS(1), .COLS(1), .FIRST(1), .LAST(1)) i_selcols
+  (
+  .g (g), .a (a_input), .f (result)
+  );
+~~~
+
+selcols latency is 0.
 
 ## Select rows of a matrix
 
 This is similar to the MATLAB syntax A(2:3,:)
 
-selrows
+~~~verilog
+selrows #(.ROWS(1), .COLS(1), .FIRST(1), .LAST(1)) i_selrows
+  (
+  .g (g), .a (a_input), .f (result)
+  );
+~~~
+
+selrows latency is 0.
 
 ## Transpose a matrix
 
 Similar to the MATLAB syntax A.'
 
-transp
+~~~verilog
+transp #(.ROWS(1), .COLS(1)) i_transp
+  (
+  .g (g), .a (a), .f (f)
+  );
+~~~
 
-## Select maximum element of a vector
+transp latency is 0.
 
-vecmax
+## Select maximum signed element of a vector
 
-## Select minimum element of a vector
+~~~verilog
+vecmax #(.COLS(1)) i_vecmax
+  (
+  .g (g), .a (input_vector), .f (result_scalar)
+  );
+~~~
 
-vecmin
+vecmax latency = 1.  Use __pipe__ and __valid__ for matching delays.
+
+## Select minimum signed element of a vector
+
+~~~verilog
+vecmax #(.COLS(1)) i_vecmin
+  (
+  .g (g), .a (input_vector), .f (result_scalar)
+  );
+~~~
+
+vecmin latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 ## Vector norm columns
 
 Similar to MATLAB vecnorm(A,2,1)
 
-vecnormcols
+Find square root of the sum of squares of the elements of each column.
+
+~~~verilog
+vecnormcols #(.ROWS(1), .COLS(1)) i_vecnormcols
+  (
+  .g (g), .a (a), .f (result)
+  );
+~~~
+
+Result is a row vector with same number of columns as a.
 
 ## Vector norm rows
 
 Similar to MATLAB vecnorm(A,2,2)
 
-vecnormrows
+Find square root of the sum of squares of the elements of each row.
+
+~~~verilog
+vecnormrows #(.ROWS(1), .COLS(1)) i_vecnormrows
+  (
+  .g (g), .a (a), .f (result)
+  );
+~~~
+
+Result is a column vector with same number of rows as a.
 
 ## Sumsqr
 
-Sum of square of each element of A, resulting in a scalar.
+Sum the squares of the elements of A, resulting in a scalar.
 
 Similar to MATLAB sumsqr(A).
 
-sumsqr
+~~~verilog
+sumsqr #(.COLS(1)) i_sumsqr
+  (
+  .g (g), .a (input_vector), .f (result_scalar)
+  );
+~~~
+
+sumsqr latency = SUMSQR_LAT = MUL_LAT + 1 = 5.  Use __sumsqr_pipe__ and __sumsqr_valid__
+for matching delays.
 
 ## Rootsqr
 
-Compute sqrt(sum of square of each element of A), resulting in a scalar.
+Compute sqrt(sum of squares of elements of A), resulting in a scalar.
 
 Similar to MATLAB norm(A).
 
-rootsqr
+~~~verilog
+rootsqr #(.COLS(1)) i_rootsqr
+  (
+  .g (g), .a (input_vector), .f (result_scalar)
+  );
+~~~
+
+rootsqr latency = SQRT_LAT + SUMSQR_LAT.  Use __rootsqr_pipe__ and
+__rootsqr_valid__ for matching delays.
 
 ## Vector cross-product
 
 Similar to MATLAB cross(A,B)
 
-crossp
+~~~verilog
+crossp #(.COLS(1)) i_crossp
+  (
+  .g (g), .a (a_vector), .b (v_vector), .f (result_vector)
+  );
+~~~
 
+crossp latency = g.CROSSP_LAT = g.MUL_LAT + 1 = 5.  Use __crossp_pipe__ and
+__crossp_valid__ for matching delays.
