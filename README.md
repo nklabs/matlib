@@ -1,9 +1,10 @@
 # nkMatlib
 
-nkMatlib is a SystemVerilog library for pipelined real-valued fixed-point
-matrix, vector and scalar operations.  It was designed to help convert
-MATLAB expressions to SystemVerilog while preserving some kind of direct
-correspondence between the source code of both languages.
+nkMatlib is a SystemVerilog library and set of associated conventions for
+pipelined real-valued fixed-point matrix, vector and scalar operations.  It
+was designed to help convert MATLAB expressions to SystemVerilog while
+preserving some kind of direct correspondence between the source code of
+both languages.
 
 nkMatlib is pipelined so that its throughput is one result per clock cycle. 
 You may feed one entire independent problem into the pipeline each cycle. 
@@ -281,9 +282,10 @@ just that both the row index values and column index values are mirrored.
 ### Fixed-point arithmetic
 
 The library generally uses signed or unsigned 2's complement fixed-point
-arithmetic.  Each number is specified by two parameters: it's WIDTH and its
+arithmetic.  Each number is specified by two parameters: its WIDTH and its
 SCALE.  WIDTH indicates the the total number of bits including the sign. 
-SCALE is the number of fractional bits.
+SCALE is the number of fractional bits (number of bits to the right of the
+binary point).
 
 The parameters are encapsulated in a SystemVerilog interface called
 __fixedp__ along with other common parameters and the clock (clk) and reset
@@ -417,7 +419,10 @@ We call these valid delays.
 Display a matrix when valid signal is high for debugging.
 
 ~~~verilog
-showmat #(.ROWS(2), .COLS(3), .TITLE("Matrix A:")) i_showmat (.g (g), .valid (valid_7), .i (A_7));
+showmat #(.ROWS(2), .COLS(3), .TITLE("Matrix A:")) i_showmat
+  (
+  .g (g), .valid (valid_7), .i (A_7)
+  );
 ~~~
 
 Prints:
@@ -432,7 +437,10 @@ Display an integer when valid signal is high for debugging.  This is in the
 same format as showmat for convenience.
 
 ~~~verilog
-showint #(.TITLE("num:"), .WIDTH(8)) i_showmat (.g (g), .valid (valid_7), .i (num_7));
+showint #(.TITLE("num:"), .WIDTH(8)) i_showmat
+  (
+  .g (g), .valid (valid_7), .i (num_7)
+  );
 ~~~
 
 Prints:
