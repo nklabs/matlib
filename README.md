@@ -450,7 +450,7 @@ Prints:
     num:
      12
 
-#### `SHOW, `SHOWCONST, `SHOWINT
+#### \`SHOW, \`SHOWCONST, \`SHOWINT
 
 Macros for printing values in pipeline stages.  These use showmat and
 showint.  The title includes the signal name and the source file name and
@@ -462,11 +462,11 @@ line number.
 `SHOWINT(fred, 8, 7)      // Print 8-bit number fred when valid_7 is high
 ~~~
 
-#### `DEBUG_SHOW, `DEBUG_SHOWINT, `DEBUG_SHOWCONST
+#### \`DEBUG_SHOW, \`DEBUG_SHOWINT, \`DEBUG_SHOWCONST
 
 Same as above, but they are active only if a macro DEBUG_ENABLE is defined.
 
-#### `PIPE
+#### \`PIPE
 
 Macro that generates code that pulls signals from one stage to another.
 
