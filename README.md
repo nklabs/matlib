@@ -6,8 +6,8 @@ MATLAB expressions to SystemVerilog while preserving some kind of direct
 correspondence between the source code of both languages.
 
 nkMatlib is pipelined so that its throughput is one result per clock cycle. 
-You may feed one independent problem into the pipeline each cycle.  The
-latency of the calculation (the number of clocks needed to compute the
+You may feed one entire independent problem into the pipeline each cycle. 
+The latency of the calculation (the number of clocks needed to compute the
 problem) depends on the number and type of operations that make it up.
 
 ## Example
@@ -413,19 +413,74 @@ We call these valid delays.
 
 ## Available Modules
 
-### Utility functions
+### Utility functions and macros
 
 #### showmat
 
-Display a matrix
+Display a matrix when valid signal is high for debugging.
 
-showmat
+~~~verilog
+showmat #(.ROWS(2), .COLS(3), .TITLE("Matrix A:")) i_showmat (.g (g), .valid (valid_7), .i (A_7));
+~~~
+
+Prints:
+
+    Matrix A:
+     1 2 3
+     4 5 6
 
 #### showint
 
-Display an integer
+Display an integer when valid signal is high for debugging.  This is in the
+same format as showmat for convenience.
 
-showint
+~~~verilog
+showint #(.TITLE("num:"), .WIDTH(8)) i_showmat (.g (g), .valid (valid_7), .i (num_7));
+~~~
+
+Prints:
+
+    num:
+     12
+
+#### SHOW, SHOWCONST, SHOWINT
+
+Macros for printing values in pipeline stages.  These use showmat and
+showint.  The title includes the signal name and the source file name and
+line number.
+
+~~~verilog
+`SHOW(fred, 2, 3, 7)      // Print 2x3 matrix fred_7 when valid_7 is high
+`SHOWCONST(fred, 2, 3, 7) // Print 2x3 matrix fred when valid_7 is high
+`SHOWINT(fred, 8, 7)      // Print 8-bit number fred when valid_7 is high
+~~~
+
+#### DEBUG_SHOW, DEBUG_SHOWINT, DEBUG_SHOWCONST
+
+Same as above, but they are active only if a macro DEBUG_ENABLE is defined.
+
+#### PIPE
+
+Macro that generates code that pull signals from one stage to another.
+
+~~~verilog
+`PIPE(pipe, [2:1][3:1][g.WIDTH-1:0], fred, 6, 7)
+~~~
+
+The above generates the following code:
+
+~~~verilog
+logic [2:1][3:1][g.WIDTH-1:0] fred_7;
+pipe #(.WIDTH($bits(fred_6))) i_pipe_fred_7 (.g (g), .i (fred_6), .o (fred_7));
+~~~
+
+This is very common code to pulls signal 'fred' from stage 6 to stage 7
+using matching pipeline type 'pipe'.  `PIPE can also be used for the valid
+signal as follows:
+
+~~~verilog
+`PIPE(valid, , valid, 6, 7)
+~~~
 
 ### Element by element operations
 
