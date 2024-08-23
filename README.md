@@ -448,7 +448,7 @@ Prints:
     num:
      12
 
-#### SHOW, SHOWCONST, SHOWINT
+#### `SHOW, `SHOWCONST, `SHOWINT
 
 Macros for printing values in pipeline stages.  These use showmat and
 showint.  The title includes the signal name and the source file name and
@@ -460,13 +460,13 @@ line number.
 `SHOWINT(fred, 8, 7)      // Print 8-bit number fred when valid_7 is high
 ~~~
 
-#### DEBUG_SHOW, DEBUG_SHOWINT, DEBUG_SHOWCONST
+#### `DEBUG_SHOW, `DEBUG_SHOWINT, `DEBUG_SHOWCONST
 
 Same as above, but they are active only if a macro DEBUG_ENABLE is defined.
 
-#### PIPE
+#### `PIPE
 
-Macro that generates code that pull signals from one stage to another.
+Macro that generates code that pulls signals from one stage to another.
 
 ~~~verilog
 `PIPE(pipe, [2:1][3:1][g.WIDTH-1:0], fred, 6, 7)
@@ -476,7 +476,11 @@ The above generates the following code:
 
 ~~~verilog
 logic [2:1][3:1][g.WIDTH-1:0] fred_7;
-pipe #(.WIDTH($bits(fred_6))) i_pipe_fred_7 (.g (g), .i (fred_6), .o (fred_7));
+
+pipe #(.WIDTH($bits(fred_6))) i_pipe_fred_7
+  (
+  .g (g), .i (fred_6), .o (fred_7)
+  );
 ~~~
 
 This is very common code to pulls signal 'fred' from stage 6 to stage 7
