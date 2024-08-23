@@ -37,38 +37,29 @@ module example
 // Stage 1, prod = A*B
 
 logic [3:1][3:1][g.WIDTH-1:0] prod_1;
-logic [3:1][3:1][g.WIDTH-1:0] C_1;
-logic valid_1;
 
 matmul #(.A_ROWS(3), .A_COLS_B_ROWS(2), .B_COLS(3)) i_matmul_prod_1
   (
     .g (g), .a (A_0), .b (B_0), .f (prod_1)
   );
 
-matmul_pipe #(.WIDTH($bits(C_0)) i_C_pipe_1
-  (
-    .g (g), .i (C_0), .o (C_1)
-  );
+// Move signals along..
 
-matmul_valid i_valid_1
-  (
-    .g (g), .i (valid_0), .o (valid_1)
-  );
+`PIPE(matmul_pipe, [3:1][3:1][g.WIDTH-1:0], C, 0, 1)
+`PIPE(matmul_valid, , valid, 0, 1)
 
 // Stage 2, result = prod+C
 
 logic [3:1][3:1][g.WIDTH-1:0] result_2;
-logic valid_2;
 
 matadd #(.ROWS(3), .COLS(3)) i_matadd_result_2
   (
     .g (g), .a (prod_1), .b (C_1), .f (result_2)
   );
 
-valid i_valid_2
-  (
-    .g (g), .i (valid_0), .o (valid_1)
-  );
+// Move signals along..
+
+`PIPE(valid, , valid, 1, 2)
 
 // Result
 
@@ -113,11 +104,13 @@ Stage 1 has the matrix multiply operator: __matmul__.  Stage 2 has the add
 operator: __matadd__.  Stage 2 needs the input C, which must be delayed by a
 number of clock cycles equaling the latency of __matmul__ so that C and the
 __matmul__ result are ready in the same cycle.  __matmul_pipe__ provides
-this matching delay.
+this matching delay.  The macro `PIPE generates the C_1 instance and the
+__matmul_pipe__ instance.
 
 A valid signal that indicates which cycles have valid data is passed through
 the pipeline.  The __matmul_valid__ and __valid__ modules provide the
-matching delays for this purpose.
+matching delays for this purpose.  The `PIPE macro is used to generate
+valid_1, valid_2 and the __matmul_valid__ and __valid__ module instances.
 
 Most flip flops in nkMatlib are not reset.  This allows the synthesis tool
 to replace strings of flip-flops with shift registers (Xilinx SRLs).  But
