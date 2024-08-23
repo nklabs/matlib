@@ -537,7 +537,7 @@ Similar to MATLAB abs(A)
 ~~~verilog
 elem_abs #(.ROWS(1), .COLS(1)) i_elem_abs
   (
-  .g (g), .a (input), .f (output)
+  .g (g), .a (input), .f (result)
   );
 ~~~
 
@@ -550,7 +550,7 @@ Similar to MATLAB -A.
 ~~~verilog
 elem_neg #(.ROWS(1), .COLS(1)) i_elem_abs
   (
-  .g (g), .a (input), .f (output)
+  .g (g), .a (input), .f (result)
   );
 ~~~
 
@@ -563,7 +563,7 @@ Right shift each element by a specified number of bits.
 ~~~verilog
 elem_rshift #(.ROWS(1), .COLS(1)) i_elem_rshift
   (
-  .g (g), .a (input), .b (shift), .f (output)
+  .g (g), .a (input), .b (shift), .f (result)
   );
 ~~~
 
@@ -621,7 +621,7 @@ Similar to MATLAB A.^-1
 ~~~verilog
 elem_sinv #(.ROWS(1), .COLS(1)) i_elem_sinv
   (
-  .g (g), .a (input), .f (output)
+  .g (g), .a (input), .f (result)
   );
 ~~~
 
@@ -639,7 +639,7 @@ For two 2x2 matricies A and B, this computes a matrix C such that:
 ~~~verilog
 elem_smax #(.ROWS(1), .COLS(1)) i_elem_smax
   (
-  .g (g), .a (input_a), .b (input_b), .f (output)
+  .g (g), .a (input_a), .b (input_b), .f (result)
   );
 ~~~
 
@@ -650,7 +650,7 @@ elem_smax latency = 1.  Use __pipe__ and __valid__ for matching delays.
 ~~~verilog
 elem_smin #(.ROWS(1), .COLS(1)) i_elem_smin
   (
-  .g (g), .a (input_a), .b (input_b), .f (output)
+  .g (g), .a (input_a), .b (input_b), .f (result)
   );
 ~~~
 
