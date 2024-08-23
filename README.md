@@ -76,8 +76,8 @@ operation from inside out of the source expression.  This distinguishes
 signals from instances, otherwise of the same name, and allows you to pass
 signals with the same name through the stages.
 
-By convention, inputs are postfixed with _0 and outputs are postfixed with
-_N.
+By convention, module inputs are postfixed with _0 and outputs are postfixed
+with _N.
 
 All modules that use nkMatlib should include macros.svh.  Macros.svh
 includes debugging and floating to fixed-point conversion macros.
@@ -142,6 +142,7 @@ logic [3:1][15:0] C; // Vector
 logic [1:2][1:3][15:0] A; // Matrix
 logic [1:2][1:3][15:0] B; // Matrix
 logic [1:3][15:0] C; // Vector
+
 logic [15:0] z; // Scalar
 ~~~
 
@@ -204,7 +205,10 @@ casting:
 
 ~~~verilog
 logic [95:0] A_bits;
-logic [$bits(A)-1:0] A_bits; // Note that you can use $bits() instead of a constant to copy the size
+
+// Note that you can use $bits() instead of a constant
+// to copy the size of A
+logic [$bits(A)-1:0] A_bits; 
 
 A_bits = A;
 ~~~
