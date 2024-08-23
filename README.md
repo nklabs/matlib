@@ -483,9 +483,9 @@ pipe #(.WIDTH($bits(fred_6))) i_pipe_fred_7
   );
 ~~~
 
-This is very common code to pulls signal 'fred' from stage 6 to stage 7
-using matching pipeline type 'pipe'.  `PIPE can also be used for the valid
-signal as follows:
+This generates very common code which in this case pulls signal 'fred' from
+stage 6 to stage 7 using matching pipeline module 'pipe'.  `PIPE can also be
+used for the valid signal as follows:
 
 ~~~verilog
 `PIPE(valid, , valid, 6, 7)
@@ -505,35 +505,78 @@ These operators may be used for matrices, vectors or scalars:
 
   ROW=1 or COLS=1: argument is a vector.
 
+Note that row vectors and a column vectors of the same size have the same
+packed array layout.  The two formats can be interchanged without any
+conversion.
+
+#### Convert between signed fixed point formats
+
+elem_snorm provdes the correct shifting, sign or zero extension and
+truncation necessary to convert elements of a matrix from one fixed point
+format into another.  Note that elem_snorm uses simple truncation: it rounds
+numbers towards 0 when losing precision.
+
+~~~verilog
+elem_snorm #(.ROWS(2), .COLS(3)) i_elem_snorm_foo_6
+  (
+  .g (g), // Input format
+  .h (h), // Output format
+  .a (foo_6), // Input
+  .f (foocvt_6) // Output
+  );
+~~~
+
+Latency of elem_snorm is 0.
+
 #### Element by element absolute value
 
 Similar to MATLAB abs(A)
 
-elem_abs #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
+~~~verilog
+elem_abs #(.ROWS(1), .COLS(1)) i_elem_abs
+  (
+  .g (g), .a (input), .f (output)
+  );
+~~~
 
-elem_abs latency = 1.
+elem_abs latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Element by element negate
 
 Similar to MATLAB -A.
 
-elem_neg #(.ROWS(1), .COLS(1)) i_elem_abs (.g (g), .a (input), .f (output));
+~~~verilog
+elem_neg #(.ROWS(1), .COLS(1)) i_elem_abs
+  (
+  .g (g), .a (input), .f (output)
+  );
+~~~
 
-elem_neg latency = 1.
+elem_neg latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Element by element unsigned right-shift
 
 Right shift each element by a specified number of bits.
 
-elem_rshift #(.ROWS(1), .COLS(1)) i_elem_rshift (.g (g), .a (input), .b (shift), .f (output));
+~~~verilog
+elem_rshift #(.ROWS(1), .COLS(1)) i_elem_rshift
+  (
+  .g (g), .a (input), .b (shift), .f (output)
+  );
+~~~
 
-ele_rshift latency = 1.
+ele_rshift latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Create a matrix where all elements have the same scalar
 
-Similar to MATLAB ones(rows, cols), zeros(rows, cols)
+Similar to MATLAB ones(rows, cols) and zeros(rows, cols)
 
-elem_same #(.ROWS(1), .COLS(1)) i_elem_same (.g (g), .a (input), .f (output));
+~~~verilog
+elem_same #(.ROWS(1), .COLS(1)) i_elem_same_ones
+  (
+  .g (g), .a (g.ONES), .f (my_ones)
+  );
+~~~
 
 elem_same latency = 0.
 
@@ -545,29 +588,58 @@ to __elem_same__.
 
 Similar to MATLAB Matrix ./ Matrix
 
-elem_sdiv #(.ROWS(1), .COLS(1)) i_elem_sdiv (.g (g), .a (dividend), .b (divisor), .f (quotient));
+~~~verilog
+elem_sdiv #(.ROWS(1), .COLS(1)) i_elem_sdiv
+  (
+  .g (g), .a (dividend), .b (divisor), .f (quotient)
+  );
+~~~
 
-elem_sdiv latency = g.WIDTH + g.SCALE.
+elem_sdiv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
 #### Signed division of each element of each matrix row by each element of row vector
 
 Similar to MATLAB Matrix ./ RowVector
 
-elem_sdiv_by_row #(.ROWS(1), .COLS(1)) i_elem_sdiv_by_row (.g (g), .a (dividend), .b (divisor_row), .f (quotient));
+~~~verilog
+elem_sdiv_by_row #(.ROWS(1), .COLS(1)) i_elem_sdiv_by_row
+  (
+  .g (g), .a (dividend), .b (divisor_row), .f (quotient)
+  );
+~~~
 
-elem_sdiv latency = g.WIDTH + g.SCALE.
+elem_sdiv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
 #### Element by element signed inverse
 
 Similar to MATLAB A.^-1
 
-elem_sinv #(.ROWS(1), .COLS(1)) i_elem_sinv (.g (g), .a (input), .f (output));
+~~~verilog
+elem_sinv #(.ROWS(1), .COLS(1)) i_elem_sinv
+  (
+  .g (g), .a (input), .f (output)
+  );
+~~~
 
-elem_sinv latency = g.WIDTH + g.SCALE.
+elem_sinv latency = g.DIV_LAT = g.WIDTH + g.SCALE.  Use __div_pipe__ and __div_valid__ for matching delays.
 
 #### Element by element signed maximum between two matrices
 
-elem_smax
+For two 2x2 matricies A and B, this computes a matrix C such that:
+
+    C[1,1] = max(A[1,1], B[1,1])
+    C[1,2] = max(A[1,2], B[1,2])
+    C[2,1] = max(A[2,1], B[2,1])
+    C[2,2] = max(A[2,2], B[2,2])
+
+~~~verilog
+elem_smax #(.ROWS(1), .COLS(1)) i_elem_smax
+  (
+  .g (g), .a (input_a), .b (input_b), .f (output)
+  );
+~~~
+
+elem_smax latency = 1.  Use __pipe__ and __valid__ for matching delays.
 
 #### Element by element signed minimum between two matrices
 
@@ -584,10 +656,6 @@ elem_smul latency = 4.
 #### Signed multiplation of each element of each matrix column by each element of column vector
 
 elem_smul_by_col
-
-#### Convert fixed point format
-
-elem_snorm
 
 #### Element by element signed square
 
